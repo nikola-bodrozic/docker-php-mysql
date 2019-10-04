@@ -1,0 +1,43 @@
+version: '3.1'
+
+services:
+
+  php:
+    image: trafex/alpine-nginx-php7:1.2.0
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./my-codebase:/var/www/html
+    environment:    
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_HOST=${MYSQL_DATABASE_SERVER_HOST}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    depends_on:
+      - mysql
+      
+  mysql:
+    image: mysql:5.7
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - db_volume:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:4.8.5
+    restart: always
+    ports:
+      - 8081:80
+    environment:
+      - PMA_HOST=${MYSQL_DATABASE_SERVER_HOST} # name of MySQL service
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PMA_PASSWORD}
+    depends_on:
+      - mysql
+
+volumes:
+  db_volume:
+    driver: local
