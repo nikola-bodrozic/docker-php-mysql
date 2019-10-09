@@ -4,6 +4,7 @@ services:
 
   php:
     image: trafex/alpine-nginx-php7:1.2.0
+    container_name: php-app
     ports:
       - '8080:8080'
     volumes:
@@ -15,9 +16,12 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     depends_on:
       - mysql
-      
+    networks:
+      - back-end
+
   mysql:
     image: mysql:5.7
+    container_name: db-server
     restart: always
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
@@ -26,9 +30,14 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     volumes:
       - db_volume:/var/lib/mysql
+    networks:
+      - back-end
+    ports:
+      - 3306:3306 # for MySQL Workbench Host is 127.0.0.1
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:4.8.5
+    container_name: phpmyadmin
     restart: always
     ports:
       - 8081:80
@@ -37,7 +46,13 @@ services:
       - MYSQL_ROOT_PASSWORD=${MYSQL_PMA_PASSWORD}
     depends_on:
       - mysql
-
+    networks:
+      - back-end    
+ 
 volumes:
   db_volume:
     driver: local
+
+networks:
+  back-end:
+    driver: bridge
