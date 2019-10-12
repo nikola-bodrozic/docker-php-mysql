@@ -1,7 +1,8 @@
-version: '3.1'
+version: '3'
 
 services:
 
+  # PHP app
   php:
     image: trafex/alpine-nginx-php7:1.2.0
     container_name: php-app
@@ -10,49 +11,51 @@ services:
     volumes:
       - ./my-codebase:/var/www/html
     environment:    
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_HOST=${MYSQL_DATABASE_SERVER_HOST}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_HOST: ${MYSQL_DATABASE_SERVER_HOST}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     depends_on:
       - mysql
     networks:
-      - back-end
+      - my-network
 
+  # database server
   mysql:
     image: mysql:5.7
-    container_name: db-server
-    restart: always
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    container_name: mysql
     volumes:
-      - db_volume:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     networks:
-      - back-end
+      - my-network
     ports:
-      - 3306:3306 # for MySQL Workbench Host is 127.0.0.1
+      - '3306:3306' # optional for MySQL GUI tools host is 127.0.0.1
 
+  # phpmyadmin
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin:4.8.5
+    image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin
     restart: always
     ports:
-      - 8081:80
+      - '8081:80'
     environment:
-      - PMA_HOST=${MYSQL_DATABASE_SERVER_HOST} # name of MySQL service
-      - MYSQL_ROOT_PASSWORD=${MYSQL_PMA_PASSWORD}
+      PMA_HOST: ${MYSQL_DATABASE_SERVER_HOST} # name of MySQL service
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     depends_on:
       - mysql
     networks:
-      - back-end    
- 
-volumes:
-  db_volume:
-    driver: local
+      - my-network
 
 networks:
-  back-end:
+  my-network:
     driver: bridge
+
+# persistent volume for database
+volumes:
+  mysql_data:
+      driver: local
