@@ -26,6 +26,7 @@ services:
     container_name: mysql
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./my.cnf:/etc/mysql/my.cnf
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -35,6 +36,7 @@ services:
       - my-network
     ports:
       - '3306:3306' # optional for MySQL GUI tools host is 127.0.0.1
+    # command: mysqld --character_set_server=utf8mb4
 
   # phpmyadmin
   phpmyadmin:
